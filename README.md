@@ -182,6 +182,8 @@ Once you have saved all your changes, you can then run the script. You will be p
 
 ![](nsxt-2.0-vghetto-lab-deployment-1.png)
 
+**Note:** Although the resource requirements may seem quite high, I found in my lab setup, the memory footprint was signifcantly smaller, espeically for storage which ended up only consuming 67GB. For home labs, you can definitely reduce the memory of the NSX setup, but this was nothing something I had looked into great detail. The script will also have an option in the future to automatically shrink vCPU and vMEM based on user configuration but for the initial release, I stuck with the pre-defined defualts for what NSX-T calls a "small" deployment. 
+
 ## Sample Execution
 
 Here is an example deployment:
