@@ -3,7 +3,7 @@
 # Description: PowerCLI script to deploy a fully functional NSX-T 2.0 lab consisting of
 #               vSphere 6.5 Update 1 which includes Nested ESXi hosts enable w/vSAN + VCSA 6.5u1.
 #               Expects a vCenter Server endpoint in which all VMs will be deployed to the system
-# Reference: http://www.virtuallyghetto.com/2016/11/vghetto-automated-vsphere-lab-deployment-for-vsphere-6-0u2-vsphere-6-5.html
+# Reference: http://www.virtuallyghetto.com/2017/10/vghetto-automated-nsx-t-2-0-lab-deployment.html
 
 # vCenter Server used to deploy Lab
 $VIServer = "vcenter.primp-industries.com"
