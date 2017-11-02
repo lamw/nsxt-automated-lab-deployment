@@ -1032,8 +1032,8 @@ if($initialNSXConfig -eq 1 -and $DeployNSX -eq 1) {
                 Start-Sleep 25
 
                 if($debug) { My-Logger "Processing certificate thumbprint ..." }
-                Copy-VMGuestFile -vm (Get-VM -Name $nsxCtrName) -GuestToLocal -GuestUser "root" -GuestPassword $NSXRootPassword -Source /tmp/controller-thumbprint -Destination $ENV:TMP\controller-thunmbprint | Out-Null
-                $nsxControllerCertThumbprint = Get-Content -Path $ENV:TMP\controller-thunmbprint | ? {$_.trim() -ne "" }
+                Copy-VMGuestFile -vm (Get-VM -Name $nsxCtrName) -GuestToLocal -GuestUser "root" -GuestPassword $NSXRootPassword -Source /tmp/controller-thumbprint -Destination $ENV:TMP\controller-thumbprint | Out-Null
+                $nsxControllerCertThumbprint = Get-Content -Path $ENV:TMP\controller-thumbprint | ? {$_.trim() -ne "" }
 
                 # Exit from shell
                 if($debug) { My-Logger "Sending exit command ..." }
