@@ -14,7 +14,7 @@
 
 ## Description
 
-Automated deployment of a fully functional NSX-T 2.0 and vSphere 6.5 Update 1 enviornment which includes a set of Nested ESXi Virtual Appliance(s) configured w/vSAN as well as a vCenter Server Appliance (VCSA) using PowerCLI. For information, you can refer to this blog post [here](http://www.virtuallyghetto.com/2017/10/vghetto-automated-nsx-t-2-0-lab-deployment.html) for more details.
+Automated deployment of a fully functional NSX-T 2.x and vSphere 6.5 Update 1 enviornment which includes a set of Nested ESXi Virtual Appliance(s) configured w/vSAN as well as a vCenter Server Appliance (VCSA) using PowerCLI. For information, you can refer to this blog post [here](http://www.virtuallyghetto.com/2017/10/vghetto-automated-nsx-t-2-0-lab-deployment.html) for more details.
 
 Below is an screenshot of an example deployment:
 
@@ -27,11 +27,17 @@ Below is an screenshot of an example deployment:
 * Windows system that supports PowerCLI
 * [PowerCLI 6.5.3](https://code.vmware.com/web/dp/tool/vmware-powercli/6.5.3)
 * Download [nsxt-2.0-vghetto-lab-deployment.ps1](nsxt-2.0-vghetto-lab-deployment.ps1) script
-* vCenter Server Appliance (VCSA) 6.5 Update 1/1a extracted ISO
+* vCenter Server Appliance (VCSA) 6.5 Update 1/1a/1d extracted ISO
 * Nested ESXi [6.5 Update 1](https://download3.vmware.com/software/vmw-tools/nested-esxi/Nested_ESXi6.5u1_Appliance_Template_v1.0.ova) Virtual Appliance OVA
-* [NSX-T 2.0 Manager for ESXi OVA](https://my.vmware.com/group/vmware/details?downloadGroup=NSX-T-200&productId=673&download=true&fileId=161b0d1e65499b4216d03a2dca77fa02&secureParam=1a9c971d283a8c95b6e6ed23e3a201aa&uuId=c64e8223-2b08-46f5-9560-807bf190081b&downloadType=)
-* [NSX-T 2.0 Controller for ESXi OVA](https://my.vmware.com/group/vmware/details?downloadGroup=NSX-T-200&productId=673&download=true&fileId=aef9a46121a71d212a0063519ec6dd7f&secureParam=e067e020dc6d6114e88dbfdf80c62385&uuId=1c895c23-6ba2-481c-95ee-b4b21d3229c0&downloadType=)
-* [NSX-T 2.0 Edge For ESXi OVA](https://my.vmware.com/group/vmware/details?downloadGroup=NSX-T-200&productId=673&download=true&fileId=17edec8462f72c324413963955d8c599&secureParam=65c571d6cf1b803b4bb6187cfb6f91d4&uuId=4eabd6f0-0a11-43b1-b48c-e4c2f42046a9&downloadType=)
+* NSX-T 2.0 or 2.1
+    * 2.0
+        * [NSX-T 2.0 Manager for ESXi OVA](https://my.vmware.com/group/vmware/details?downloadGroup=NSX-T-200&productId=673&download=true&fileId=161b0d1e65499b4216d03a2dca77fa02&secureParam=1a9c971d283a8c95b6e6ed23e3a201aa&uuId=c64e8223-2b08-46f5-9560-807bf190081b&downloadType=)
+        * [NSX-T 2.0 Controller for ESXi OVA](https://my.vmware.com/group/vmware/details?downloadGroup=NSX-T-200&productId=673&download=true&fileId=aef9a46121a71d212a0063519ec6dd7f&secureParam=e067e020dc6d6114e88dbfdf80c62385&uuId=1c895c23-6ba2-481c-95ee-b4b21d3229c0&downloadType=)
+        * [NSX-T 2.0 Edge For ESXi OVA](https://my.vmware.com/group/vmware/details?downloadGroup=NSX-T-200&productId=673&download=true&fileId=17edec8462f72c324413963955d8c599&secureParam=65c571d6cf1b803b4bb6187cfb6f91d4&uuId=4eabd6f0-0a11-43b1-b48c-e4c2f42046a9&downloadType=)
+    * 2.1
+        * [NSX-T 2.1 Manager for ESXi OVA](https://my.vmware.com/group/vmware/details?downloadGroup=NSX-T-210&productId=673&download=true&fileId=ceb09d4c2a044e745be0e5ab7f698295&secureParam=4faa362cd30eda7241a9471ee692774b&uuId=e268e430-59fd-45f2-a7c4-08629fe084ef&downloadType=)
+        * [NSX-T 2.1 Controller for ESXi OVA](https://my.vmware.com/group/vmware/details?downloadGroup=NSX-T-210&productId=673&download=true&fileId=46f4cf5fa854bcd4f2c74f849e7acb69&secureParam=852f862526f99ea5f73fda3fb455ca14&uuId=e7c7f09a-3567-4aa4-9c80-d30bdae030fe&downloadType=)
+        * [NSX-T 2.1 Edge For ESXi OVA](https://my.vmware.com/group/vmware/details?downloadGroup=NSX-T-210&productId=673&download=true&fileId=46bdb3be8b48cdea045eed660a9d68d0&secureParam=35cf3c9f5f143fd48a74afd1773cde7f&uuId=dd993136-275e-43b6-83e7-6ba10fec89ac&downloadType=)
 
 ## Configuration
 
@@ -137,6 +143,14 @@ $ESXiUplinkProfilePolicy = "FAILOVER_ORDER" # Leave alone unless you know what y
 $ESXiUplinkProfileActivepNIC = "vmnic2" # vminic2 or vminic 3, Leave alone unless you know what you're doing
 $ESXiUplinkProfileTransportVLAN = "0"
 $ESXiUplinkProfileMTU = "1600"
+
+$EdgeUplinkProfileName = "Edge-Uplink-Profile"
+$EdgeUplinkProfilePolicy = "FAILOVER_ORDER"
+$EdgeUplinkProfileActivepNIC = "fp-eth1"
+$EdgeUplinkProfileTransportVLAN = "0"
+$EdgeUplinkProfileMTU = "1600"
+
+$EdgeClusterName = "Edge-Cluster-01"
 ```
 
 This section describes the NSX-T Manager configuration. Currently, the re-sizing of the VM has not been enabled but will be possible in the future. For now, you can simply adjust the Hostname/IP Address.

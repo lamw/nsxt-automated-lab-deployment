@@ -92,6 +92,14 @@ $ESXiUplinkProfileActivepNIC = "vmnic2" # vminic2 or vminic 3, Leave alone unles
 $ESXiUplinkProfileTransportVLAN = "0"
 $ESXiUplinkProfileMTU = "1600"
 
+$EdgeUplinkProfileName = "Edge-Uplink-Profile"
+$EdgeUplinkProfilePolicy = "FAILOVER_ORDER"
+$EdgeUplinkProfileActivepNIC = "fp-eth1"
+$EdgeUplinkProfileTransportVLAN = "0"
+$EdgeUplinkProfileMTU = "1600"
+
+$EdgeClusterName = "Edge-Cluster-01"
+
 # NSX-T Manager Configurations
 $NSXTMgrDeploymentSize = "small"
 $NSXTMgrvCPU = "2"
@@ -1087,7 +1095,7 @@ if($initialNSXConfig -eq 1 -and $DeployNSX -eq 1) {
         Set-VMKeystrokes -VMName $nsxEdgeName -StringInput $NSXAdminPassword -ReturnCarriage $true
         Start-Sleep 5
 
-        # Join Controller to NSX Manager
+        # Join NSX Edge to NSX Manager
         if($debug) { My-Logger "Sending join management plane command ..." }
         $joinMgmtCmd1 = "join management-plane $NSXTMgrIPAddress username $NSXAdminUsername thumbprint $nsxMgrCertThumbprint"
         $joinMgmtCmd2 = "$NSXAdminPassword"
@@ -1128,9 +1136,10 @@ if($postDeployNSXConfig -eq 1 -and $DeployNSX -eq 1) {
     $runLogicalSwitch=$true
     $runHostPrep=$true
     $runUplinkProfile=$true
-    $runAddTransportNode=$true
+    $runAddESXiTransportNode=$true
+    $runAddEdgeTransportNode=$true
+    $runAddEdgeCluster=$true
 
-    ### Verify Health for all Nodes
     if($runHealth) {
         My-Logger "Verifying health of all NSX Manager/Controller Nodes ..."
         $clusterNodeService = Get-NsxtService -Name "com.vmware.nsx.cluster.nodes"
@@ -1162,7 +1171,6 @@ if($postDeployNSXConfig -eq 1 -and $DeployNSX -eq 1) {
         }
     }
 
-    ### Accept EULA
     if($runEULA) {
         My-Logger "Accepting NSX Manager EULA ..."
         $eulaService = Get-NsxtService -Name "com.vmware.nsx.eula.accept"
@@ -1263,8 +1271,9 @@ if($postDeployNSXConfig -eq 1 -and $DeployNSX -eq 1) {
     }
 
     if($runUplinkProfile) {
-        My-Logger "Creating ESXi Uplink Profile ..."
         $hostSwitchProfileService = Get-NsxtService -Name "com.vmware.nsx.host_switch_profiles"
+
+        My-Logger "Creating ESXi Uplink Profile ..."
         $ESXiUplinkProfileSpec = $hostSwitchProfileService.help.create.base_host_switch_profile.uplink_host_switch_profile.Create()
         $activeUplinkSpec = $hostSwitchProfileService.help.create.base_host_switch_profile.uplink_host_switch_profile.teaming.active_list.Element.Create()
         $activeUplinkSpec.uplink_name = $ESXiUplinkProfileActivepNIC
@@ -1275,9 +1284,21 @@ if($postDeployNSXConfig -eq 1 -and $DeployNSX -eq 1) {
         $addActiveUplink = $ESXiUplinkProfileSpec.teaming.active_list.Add($activeUplinkSpec)
         $ESXiUplinkProfileSpec.teaming.policy = $ESXiUplinkProfilePolicy
         $ESXiUplinkProfile = $hostSwitchProfileService.create($ESXiUplinkProfileSpec)
+
+        My-Logger "Creating Edge Uplink Profile ..."
+        $EdgeUplinkProfileSpec = $hostSwitchProfileService.help.create.base_host_switch_profile.uplink_host_switch_profile.Create()
+        $activeUplinkSpec = $hostSwitchProfileService.help.create.base_host_switch_profile.uplink_host_switch_profile.teaming.active_list.Element.Create()
+        $activeUplinkSpec.uplink_name = $EdgeUplinkProfileActivepNIC
+        $activeUplinkSpec.uplink_type = "PNIC"
+        $EdgeUplinkProfileSpec.display_name = $EdgeUplinkProfileName
+        $EdgeUplinkProfileSpec.mtu = $EdgeUplinkProfileMTU
+        $EdgeUplinkProfileSpec.transport_vlan = $EdgeUplinkProfileTransportVLAN
+        $addActiveUplink = $EdgeUplinkProfileSpec.teaming.active_list.Add($activeUplinkSpec)
+        $EdgeUplinkProfileSpec.teaming.policy = $EdgeUplinkProfilePolicy
+        $EdgeUplinkProfile = $hostSwitchProfileService.create($EdgeUplinkProfileSpec)
     }
 
-    if($runAddTransportNode) {
+    if($runAddESXiTransportNode) {
         $transportNodeService = Get-NsxtService -Name "com.vmware.nsx.transport_nodes"
         $transportNodeStateService = Get-NsxtService -Name "com.vmware.nsx.transport_nodes.state"
 
@@ -1358,6 +1379,71 @@ if($postDeployNSXConfig -eq 1 -and $DeployNSX -eq 1) {
             }
         }
     }
+
+    if($runAddEdgeTransportNode) {
+        $transportNodeService = Get-NsxtService -Name "com.vmware.nsx.transport_nodes"
+        $transportNodeStateService = Get-NsxtService -Name "com.vmware.nsx.transport_nodes.state"
+
+        # Retrieve all Edge Host Nodes
+        $edgeNodes = (Get-NsxtService -Name "com.vmware.nsx.fabric.nodes").list().results | where { $_.resource_type -eq "EdgeNode" }
+        $EdgeUplinkProfile = (Get-NsxtService -Name "com.vmware.nsx.host_switch_profiles").list().results[1]
+        $ipPool = (Get-NsxtService -Name "com.vmware.nsx.pools.ip_pools").list().results[0]
+        $overlayTZ = (Get-NsxtService -Name "com.vmware.nsx.transport_zones").list().results | where { $_.transport_type -eq "OVERLAY" }
+
+        foreach ($edgeNode in $edgeNodes) {
+            $edgeNodeName = $edgeNode.display_name
+            My-Logger "Adding $edgeNodeName Transport Node ..."
+
+            # Create all required empty specs
+            $transportNodeSpec = $transportNodeService.help.create.transport_node.Create()
+            $hostSwitchSpec = $transportNodeService.help.create.transport_node.host_switches.Element.Create()
+            $hostSwitchProfileSpec = $transportNodeService.help.create.transport_node.host_switches.Element.host_switch_profile_ids.Element.Create()
+            $pnicSpec = $transportNodeService.help.create.transport_node.host_switches.Element.pnics.Element.Create()
+            $transportZoneEPSpec = $transportNodeService.help.create.transport_node.transport_zone_endpoints.Element.Create()
+
+            $transportNodeSpec.display_name = $edgeNodeName
+            $hostSwitchSpec.host_switch_name = "Overlay"
+            $hostSwitchProfileSpec.key = "UplinkHostSwitchProfile"
+            $hostSwitchProfileSpec.value = $EdgeUplinkProfile.id
+            $pnicSpec.device_name = $EdgeUplinkProfileActivepNIC
+            $pnicSpec.uplink_name = $EdgeUplinkProfileActivepNIC
+            $hostSwitchSpec.static_ip_pool_id = $ipPool.id
+            $pnicAddResult = $hostSwitchSpec.pnics.Add($pnicSpec)
+            $switchProfileAddResult = $hostSwitchSpec.host_switch_profile_ids.Add($hostSwitchProfileSpec)
+            $switchAddResult = $transportNodeSpec.host_switches.Add($hostSwitchSpec)
+            $transportZoneEPSpec.transport_zone_id = $overlayTZ.id
+            $transportZoneAddResult = $transportNodeSpec.transport_zone_endpoints.Add($transportZoneEPSpec)
+            $transportNodeSpec.node_id = $edgeNode.id
+            $transportNode = $transportNodeService.create($transportNodeSpec)
+
+            My-Logger "Waiting for transport node configurations to complete ..."
+            while ($transportNodeStateService.get($transportNode.id).state -ne "success") {
+                if($debug) { My-Logger "ESXi transport node still being configured, sleeping for 30 seconds ..." }
+                Start-Sleep 30
+            }
+        }
+    }
+
+    if($runAddEdgeCluster) {
+        $edgeNodes = (Get-NsxtService -Name "com.vmware.nsx.fabric.nodes").list().results | where { $_.resource_type -eq "EdgeNode" }
+        $edgeClusterService = Get-NsxtService -Name "com.vmware.nsx.edge_clusters"
+        $edgeNodeMembersSpec = $edgeClusterService.help.create.edge_cluster.members.Create()
+
+        My-Logger "Creating Edge Cluster $EdgeClusterName and adding Edge Hosts ..."
+
+        foreach ($edgeNode in $edgeNodes) {
+            $edgeNodeName = $edgeNode.display_name
+            $edgeNodeMemberSpec = $edgeClusterService.help.create.edge_cluster.members.Element.Create()
+            $edgeNodeMemberSpec.transport_node_id = $edgeNode.id
+            $edgeNodeMemberAddResult = $edgeNodeMembersSpec.Add($edgeNodeMemberSpec)
+        }
+
+        $edgeClusterSpec = $edgeClusterService.help.create.edge_cluster.Create()
+        $edgeClusterSpec.display_name = $EdgeClusterName
+        $edgeClusterSpec.members = $edgeNodeMembersSpec
+        $edgeCluster = $edgeClusterService.Create($edgeClusterSpec)
+    }
+
     My-Logger "Disconnecting from NSX Manager ..."
     Disconnect-NsxtServer * -Confirm:$false
 }
