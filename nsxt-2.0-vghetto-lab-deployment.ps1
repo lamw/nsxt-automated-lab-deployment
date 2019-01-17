@@ -787,39 +787,40 @@ if($DeployNSX -eq 1) {
 
 if($deployVCSA -eq 1) {
         $config = (Get-Content -Raw "$($VCSAInstallerPath)\vcsa-cli-installer\templates\install\embedded_vCSA_on_VC.json") | convertfrom-json
-        $config.'new.vcsa'.vc.hostname = $VIServer
-        $config.'new.vcsa'.vc.username = $VIUsername
-        $config.'new.vcsa'.vc.password = $VIPassword
-        $config.'new.vcsa'.vc.'deployment.network' = $VMNetwork
-        $config.'new.vcsa'.vc.datastore = $datastore
-        $config.'new.vcsa'.vc.datacenter = $datacenter.name
-        $config.'new.vcsa'.vc.target = $VMCluster
-        $config.'new.vcsa'.appliance.'thin.disk.mode' = $true
-        $config.'new.vcsa'.appliance.'deployment.option' = $VCSADeploymentSize
-        $config.'new.vcsa'.appliance.name = $VCSADisplayName
-        $config.'new.vcsa'.network.'ip.family' = "ipv4"
-        $config.'new.vcsa'.network.mode = "static"
-        $config.'new.vcsa'.network.ip = $VCSAIPAddress
-        $config.'new.vcsa'.network.'dns.servers'[0] = $VMDNS
-        $config.'new.vcsa'.network.prefix = $VCSAPrefix
-        $config.'new.vcsa'.network.gateway = $VMGateway
-        $config.'new.vcsa'.network.'system.name' = $VCSAHostname
-        $config.'new.vcsa'.os.password = $VCSARootPassword
+        $config.new_vcsa.vc.hostname = $VIServer
+        $config.new_vcsa.vc.username = $VIUsername
+        $config.new_vcsa.vc.password = $VIPassword
+        $config.new_vcsa.vc.deployment_network = $VMNetwork
+        $config.new_vcsa.vc.datastore = $datastore
+        $config.new_vcsa.vc.datacenter = $datacenter.name
+        $config.new_vcsa.vc.target = $VMCluster
+        $config.new_vcsa.appliance.thin_disk_mode = $true
+        $config.new_vcsa.appliance.deployment_option = $VCSADeploymentSize
+        $config.new_vcsa.appliance.name = $VCSADisplayName
+        $config.new_vcsa.network.ip_family = "ipv4"
+        $config.new_vcsa.network.mode = "static"
+        $config.new_vcsa.network.ip = $VCSAIPAddress
+        $config.new_vcsa.network.dns_servers[0] = $VMDNS
+        $config.new_vcsa.network.prefix = $VCSAPrefix
+        $config.new_vcsa.network.gateway = $VMGateway
+        $config.new_vcsa.network.system_name = $VCSAHostname
+        $config.new_vcsa.os.password = $VCSARootPassword
         if($VCSASSHEnable -eq "true") {
             $VCSASSHEnableVar = $true
         } else {
             $VCSASSHEnableVar = $false
         }
-        $config.'new.vcsa'.os.'ssh.enable' = $VCSASSHEnableVar
-        $config.'new.vcsa'.sso.password = $VCSASSOPassword
-        $config.'new.vcsa'.sso.'domain-name' = $VCSASSODomainName
-        $config.'new.vcsa'.sso.'site-name' = $VCSASSOSiteName
+        $config.new_vcsa.os.ssh_enable = $VCSASSHEnableVar
+        $config.new_vcsa.sso.password = $VCSASSOPassword
+        $config.new_vcsa.sso.domain_name = $VCSASSODomainName
+        # Below no longer appears in default template
+        #$config.new_vcsa.sso.'site-name' = $VCSASSOSiteName
 
         My-Logger "Creating VCSA JSON Configuration file for deployment ..."
         $config | ConvertTo-Json | Set-Content -Path "$($ENV:Temp)\jsontemplate.json"
 
         My-Logger "Deploying the VCSA ..."
-        Invoke-Expression "$($VCSAInstallerPath)\vcsa-cli-installer\win32\vcsa-deploy.exe install --no-esx-ssl-verify --accept-eula --acknowledge-ceip $($ENV:Temp)\jsontemplate.json"| Out-File -Append -LiteralPath $verboseLogFile
+        Invoke-Expression "$($VCSAInstallerPath)\vcsa-cli-installer\win32\vcsa-deploy.exe install --no-ssl-certificate-verification --accept-eula --acknowledge-ceip $($ENV:Temp)\jsontemplate.json"| Out-File -Append -LiteralPath $verboseLogFile
 }
 
 if($moveVMsIntovApp -eq 1) {
