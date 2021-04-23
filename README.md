@@ -1,4 +1,4 @@
-# vGhetto Automated NSX-T Lab Deployment
+# NSX-T Automated Lab Deployment
 
 ![](nsxt-logo.png)
 
@@ -14,11 +14,11 @@
 
 ## Description
 
-Automated deployment of a fully functional NSX-T 2.x and vSphere 6.5 Update 1 enviornment which includes a set of Nested ESXi Virtual Appliance(s) configured w/vSAN as well as a vCenter Server Appliance (VCSA) using PowerCLI. For information, you can refer to this blog post [here](http://www.virtuallyghetto.com/2017/10/vghetto-automated-nsx-t-2-0-lab-deployment.html) for more details.
+Automated deployment of a fully functional NSX-T 2.x and vSphere 6.5 Update 1 environment which includes a set of Nested ESXi Virtual Appliance(s) configured w/vSAN as well as a vCenter Server Appliance (VCSA) using PowerCLI. For information, you can refer to this blog post [here](http://www.virtuallyghetto.com/2017/10/vghetto-automated-nsx-t-2-0-lab-deployment.html) for more details.
 
 Below is an screenshot of an example deployment:
 
-![](nsxt-2.0-vghetto-lab-deployment-0.png)
+![](nsxt-2.0-lab-deployment-0.png)
 
 ## Changelog
 
@@ -26,7 +26,7 @@ Below is an screenshot of an example deployment:
 * vCenter Server endpoint running at least vSphere 6.0u2 or later
 * Windows system that supports PowerCLI
 * [PowerCLI 6.5.3](https://code.vmware.com/web/dp/tool/vmware-powercli/6.5.3)
-* Download [nsxt-2.0-vghetto-lab-deployment.ps1](nsxt-2.0-vghetto-lab-deployment.ps1) script
+* Download [nsxt-2.0-lab-deployment.ps1](nsxt-2.0-lab-deployment.ps1) script
 * vCenter Server Appliance (VCSA) 6.5 Update 1/1a/1d extracted ISO
 * Nested ESXi [6.5 Update 1](https://download3.vmware.com/software/vmw-tools/nested-esxi/Nested_ESXi6.5u1_Appliance_Template_v1.0.ova) Virtual Appliance OVA
 * NSX-T 2.0 or 2.1
@@ -188,13 +188,13 @@ Once you have saved your changes, you can now run the PowerCLI script as you nor
 
 ## Logging
 
-There is additional verbose logging that outputs as a log file in your current working directory called **nsxt20-vghetto-lab-deployment.log** which can be useful for debugging purposes.
+There is additional verbose logging that outputs as a log file in your current working directory called **nsxt20-lab-deployment.log** which can be useful for debugging purposes.
 
 ## Verification
 
 Once you have saved all your changes, you can then run the script. You will be provided with a summary of what will be deployed and you can verify that everything is correct before attempting the deployment. Below is a screenshot on what this would look like:
 
-![](nsxt-2.0-vghetto-lab-deployment-1.png)
+![](nsxt-2.0-lab-deployment-1.png)
 
 **Note:** Although the resource requirements may seem quite high, I found in my lab setup, the memory footprint was signifcantly smaller, espeically for storage which ended up only consuming 67GB. For home labs, you can definitely reduce the memory of the NSX setup, but this was nothing something I had looked into great detail. The script will also have an option in the future to automatically shrink vCPU and vMEM based on user configuration but for the initial release, I stuck with the pre-defined defualts for what NSX-T calls a "small" deployment. 
 
@@ -202,15 +202,15 @@ Once you have saved all your changes, you can then run the script. You will be p
 
 Here is an example deployment:
 
-![](nsxt-2.0-vghetto-lab-deployment-2.png)
+![](nsxt-2.0-lab-deployment-2.png)
 
 
 If everything is succesful, you can now login to both your vCenter Server as well as NSX Manager. The NSX-T Manager has a new HTML5 UI which is decoupled from vCenter Server. To access it, open a browser to the following URL: **https://[NSXT-MANAGER-ADDRESS]** and using the admin credentials you had configured earlier.
 
 Once logged in, you will see an overview of all your NSX Nodes by selecting the *Dashboard** tab on the left side.
 
-![](nsxt-2.0-vghetto-lab-deployment-3.png)
+![](nsxt-2.0-lab-deployment-3.png)
 
 You can also verify that all your ESXi hosts have been properly configurd and prepared by selecting the **Fabric** tab on the left side and navigating to *HOSTS* tab at the top.
 
-![](nsxt-2.0-vghetto-lab-deployment-4.png)
+![](nsxt-2.0-lab-deployment-4.png)

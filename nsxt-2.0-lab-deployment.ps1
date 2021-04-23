@@ -132,10 +132,10 @@ $addHostByDnsName = 0
 #### DO NOT EDIT BEYOND HERE ####
 
 $debug = $true
-$verboseLogFile = "nsxt20-vghetto-lab-deployment.log"
+$verboseLogFile = "nsxt20-lab-deployment.log"
 $vSphereVersion = "6.5"
 $random_string = -join ((65..90) + (97..122) | Get-Random -Count 8 | % {[char]$_})
-$VAppName = "vGhetto-Nested-NSX-T-Lab-$vSphereVersion-$random_string"
+$VAppName = "Nested-NSX-T-Lab-$vSphereVersion-$random_string"
 
 $vcsaSize2MemoryStorageMap = @{
 "tiny"=@{"cpu"="2";"mem"="10";"disk"="250"};
@@ -412,7 +412,7 @@ if($preCheck -eq 1) {
 if($confirmDeployment -eq 1) {
     Write-Host -ForegroundColor Magenta "`nPlease confirm the following configuration will be deployed:`n"
 
-    Write-Host -ForegroundColor Yellow "---- vGhetto NSX-T Automated Lab Deployment Configuration ---- "
+    Write-Host -ForegroundColor Yellow "---- NSX-T Automated Lab Deployment Configuration ---- "
     Write-Host -NoNewline -ForegroundColor Green "Nested ESXi Image Path: "
     Write-Host -ForegroundColor White $NestedESXiApplianceOVA
     Write-Host -NoNewline -ForegroundColor Green "VCSA Image Path: "
