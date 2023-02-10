@@ -29,6 +29,7 @@ Below is an screenshot of an example deployment:
 * Download [nsxt-2.0-lab-deployment.ps1](nsxt-2.0-lab-deployment.ps1) script
 * vCenter Server Appliance (VCSA) 6.5 Update 1/1a/1d extracted ISO
 * Nested ESXi [6.5 Update 1](https://download3.vmware.com/software/vmw-tools/nested-esxi/Nested_ESXi6.5u1_Appliance_Template_v1.0.ova) Virtual Appliance OVA
+* Enable either [MAC Learning](https://williamlam.com/2018/04/native-mac-learning-in-vsphere-6-7-removes-the-need-for-promiscuous-mode-for-nested-esxi.html) or [Promiscuous Mode](https://kb.vmware.com/kb/1004099) on your physical ESXi host networking to ensure proper network connectivity for Nested ESXi workloads
 * NSX-T 2.0 or 2.1
     * 2.0
         * [NSX-T 2.0 Manager for ESXi OVA](https://my.vmware.com/group/vmware/details?downloadGroup=NSX-T-200&productId=673&download=true&fileId=161b0d1e65499b4216d03a2dca77fa02&secureParam=1a9c971d283a8c95b6e6ed23e3a201aa&uuId=c64e8223-2b08-46f5-9560-807bf190081b&downloadType=)
